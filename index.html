@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8' />
+  <title>line-zindex</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' rel='stylesheet' />
+  <style>
+    body { margin:0; padding:0; }
+    #map { position:absolute; top:0; bottom:0; width:100%; }
+    .zindex {
+            position: absolute;
+            right: 40px;
+            top: 0;
+            padding: 10px;
+            
+        }
+
+        #zindex-inner {
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 0;
+            cursor: pointer;
+            color:#fff;
+            background-color: rgb(64,135,200);
+            border-radius:5px;
+        }
+  </style>
+</head>
+<body>
+
+<div id='map'></div>
+<div class='zindex'>
+  <button id='zindex-inner'>ここを押すたびにzindexが変わる</button>
+</div>
+<script>
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'https://vt01.mapion.co.jp/gl-server/style/lab.json?access_token=mt-pk.eyJ1IjoibWFwaW9uIiwiYSI6InJ5ZXFiOWJyZ3J2MjV3ZDcyNXY3Z3dmYzYifQ.XoOA7fe-5nUi8ALSyCl277',
+  center: [139.757186, 35.634439],
+  zoom: 16,
+  localIdeographFontFamily: false
+});
+map.addControl(new mapboxgl.NavigationControl());
+
+var index = 0;
+
+map.on('load', function () {
+
+  map.addSource('roads', {
+    type: 'geojson',
+    data: geojson
+  });
+
+  map.addLayer({
+    "id": "roads",
+    "type": "line",
+    "source": "roads",
+    "paint": {
+      "line-color": [
+        "match",
+        [
+          "get",
+          "roadType"
+        ],
+        "motorway",
+        "#7E92CE",
+        "primary",
+        "#EFC784",
+        "secondary",
+        "#FCF39B",
+        "#000000"
+      ],
+      "line-width": [
+        "match",
+        [
+          "get",
+          "roadType"
+        ],
+        "motorway",
+        12,
+        "primary",
+        8,
+        "secondary",
+        5,
+        1
+      ]
+    }
+  });
+
+  document.getElementById('zindex-inner').addEventListener('click', function(e) {
+    if (index < 2) {
+      index += 1;
+    } else {
+      index = 0;
+    }
+
+    geojson.features.move(index - 1, index);
+    map.getSource('roads').setData(geojson);
+  });
+});
+
+Array.prototype.move = function(from, to) {
+  this.splice(to, 0, this.splice(from, 1)[0]);
+};
+
+var geojson = {
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "properties": {
+      "roadType": "motorway"
+    },
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [139.753751, 35.634865],
+        [139.759221, 35.634865],
+      ]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "roadType": "primary"
+    },
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [139.754882, 35.635859],
+        [139.754882, 35.634170],
+      ]
+    }
+  }, {
+    "type": "Feature",
+    "properties": {
+      "roadType": "secondary"
+    },
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [139.757617, 35.635859],
+        [139.757617, 35.634170],
+      ]
+    }
+  }]
+}
+</script>
+
+</body>
+</html>
